@@ -1,6 +1,5 @@
 const controls = document.querySelector("#controls");
 const btnPlay = document.querySelector("#play-control");
-
 let index = 0;
 let currentMusic;
 let isPlaying = false;
@@ -38,10 +37,10 @@ controls.addEventListener("click", function (event) {
     const textTotalDuration = document.querySelector("#total-duration");
 
     progressbar.max = currentMusic.audio.duration;
-    textTotalDuration.innerText = secondsToMinuts(currentMusic.audio.duration);
+    textTotalDuration.innerText = secondsToMinutes(currentMusic.audio.duration);
 
     currentMusic.audio.ontimeupdate = function () {
-      textCurrentDuration.innerText = secondsToMinuts(
+      textCurrentDuration.innerText = secondsToMinutes(
         currentMusic.audio.currentTime
       );
       progressbar.valueAsNumber = currentMusic.audio.currentTime;
@@ -52,6 +51,7 @@ controls.addEventListener("click", function (event) {
     if (index === 0) {
       updateDataMusic();
     }
+
     if (!isPlaying) {
       btnPlay.classList.replace("bi-play-fill", "bi-pause-fill");
       currentMusic.audio.play();
@@ -61,6 +61,7 @@ controls.addEventListener("click", function (event) {
       currentMusic.audio.pause();
       isPlaying = false;
     }
+    musicEnded();
   }
 
   if (event.target.id == "vol-icon") {
@@ -76,14 +77,17 @@ controls.addEventListener("click", function (event) {
         "bi-volume-up-fill"
       );
     }
+    musicEnded();
   }
 
   if (event.target.id == "volume") {
     currentMusic.audio.volume = event.target.valueAsNumber / 100;
+    musicEnded();
   }
 
   if (event.target.id == "progressbar") {
     currentMusic.audio.currentTime = event.target.valueAsNumber;
+    musicEnded();
   }
 
   if (event.target.id == "next-control") {
@@ -92,30 +96,45 @@ controls.addEventListener("click", function (event) {
     if (index == audios.length) {
       index = 0;
     }
+
     currentMusic.audio.pause();
     updateDataMusic();
     currentMusic.audio.play();
     btnPlay.classList.replace("bi-play-fill", "bi-pause-fill");
+    musicEnded();
   }
 
   if (event.target.id == "prev-control") {
     index--;
 
     if (index == -1) {
-      audios.length - 1;
+      index = audios.length - 1;
     }
+
     currentMusic.audio.pause();
     updateDataMusic();
     currentMusic.audio.play();
     btnPlay.classList.replace("bi-play-fill", "bi-pause-fill");
+    musicEnded();
   }
 
-  if (event.target.id == "progressbar") {
-    currentMusic.audio.currentTime = event.target.valueAsNumber;
+  function musicEnded() {
+    currentMusic.audio.addEventListener("ended", function () {
+      index++;
+
+      if (index == audios.length) {
+        index = 0;
+      }
+
+      currentMusic.audio.pause();
+      updateDataMusic();
+      currentMusic.audio.play();
+      btnPlay.classList.replace("bi-play-fill", "bi-pause-fill");
+    });
   }
 });
 
-function secondsToMinuts(time) {
+function secondsToMinutes(time) {
   const minutes = Math.floor(time / 60);
   const seconds = Math.floor(time % 60);
   return `${("0" + minutes).slice(-2)}:${("0" + seconds).slice(-2)}`;
